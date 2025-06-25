@@ -1,0 +1,85 @@
+{
+  "timestamp": "2025-06-20T21:43:08.123525",
+  "total_emails": 7,
+  "accuracy": 1.0,
+  "algorithm_performance": {
+    "naive_bayes": {
+      "accuracy": 1.0,
+      "correct": 6,
+      "total": 6
+    },
+    "svm": {
+      "accuracy": 1.0,
+      "correct": 6,
+      "total": 6
+    },
+    "random_forest": {
+      "accuracy": 1.0,
+      "correct": 6,
+      "total": 6
+    },
+    "logistic_regression": {
+      "accuracy": 1.0,
+      "correct": 6,
+      "total": 6
+    }
+  },
+  "detailed_results": [
+    {
+      "email_id": 1,
+      "actual_label": "SPAM",
+      "predicted_label": "spam",
+      "confidence": 0.9534682995360219,
+      "spam_probability": 0.9534682995360219,
+      "text_preview": "URGENT! Congratulations! You've won $1000 CASH! Click here NOW to claim your prize before it expires"
+    },
+    {
+      "email_id": 2,
+      "actual_label": "SPAM",
+      "predicted_label": "spam",
+      "confidence": 0.8903591576267524,
+      "spam_probability": 0.8903591576267524,
+      "text_preview": "ALERT: Your account will be suspended! Verify immediately or risk losing access. ACT NOW!"
+    },
+    {
+      "email_id": 3,
+      "actual_label": "SPAM",
+      "predicted_label": "spam",
+      "confidence": 0.9645723754311395,
+      "spam_probability": 0.9645723754311395,
+      "text_preview": "FREE MONEY!!! Make $500/day working from home! Limited time offer! Click here!!!"
+    },
+    {
+      "email_id": 4,
+      "actual_label": "HAM",
+      "predicted_label": "ham",
+      "confidence": 0.7618907253698043,
+      "spam_probability": 0.23810927463019574,
+      "text_preview": "Hey John, thanks for your help with the project yesterday. The presentation went really well!"
+    },
+    {
+      "email_id": 5,
+      "actual_label": "HAM",
+      "predicted_label": "ham",
+      "confidence": 0.7970938988045506,
+      "spam_probability": 0.20290610119544944,
+      "text_preview": "Don't forget about mom's birthday next week. I was thinking we could get her that book she mentioned"
+    },
+    {
+      "email_id": 6,
+      "actual_label": "HAM",
+      "predicted_label": "ham",
+      "confidence": 0.7967383061212548,
+      "spam_probability": 0.20326169387874513,
+      "text_preview": "The weather forecast shows rain tomorrow. You might want to bring an umbrella to the meeting."
+    },
+    {
+      "email_id": 7,
+      "actual_label": "BORDERLINE",
+      "predicted_label": "ham",
+      "confidence": 0.8589402902118575,
+      "spam_probability": 0.14105970978814247,
+      "text_preview": "Special offer for you! Save 20% on your next purchase. Valid until end of month."
+    }
+  ]
+}

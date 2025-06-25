@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-06-21T08:35:25.457200",
+  "models_trained": [
+    "naive_bayes",
+    "svm",
+    "random_forest",
+    "logistic_regression"
+  ],
+  "best_model": "Naive Bayes",
+  "best_f1_score": 0.8571428571428571,
+  "results": {
+    "naive_bayes": {
+      "accuracy": 0.8181818181818182,
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1_score": 0.8571428571428571,
+      "auc_score": 1.0
+    },
+    "svm": {
+      "accuracy": 0.6363636363636364,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1_score": 0.7499999999999999,
+      "auc_score": 0.0
+    },
+    "random_forest": {
+      "accuracy": 0.6363636363636364,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1_score": 0.7499999999999999,
+      "auc_score": 0.9666666666666668
+    },
+    "logistic_regression": {
+      "accuracy": 0.6363636363636364,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1_score": 0.7499999999999999,
+      "auc_score": 1.0
+    }
+  }
+}

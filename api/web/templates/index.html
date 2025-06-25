@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Email Classifier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .prediction-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .prediction-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .spam-result {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .ham-result {
+            background: linear-gradient(135deg, #51cf66, #47ad5a);
+            color: white;
+        }
+
+        .confidence-bar {
+            height: 20px;
+            border-radius: 10px;
+            transition: width 0.8s ease-in-out;
+        }
+
+        .model-result {
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            color: #007bff;
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        /* Splash Screen Styles */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            opacity: 1;
+            transition: opacity 1s ease-out;
+        }
+
+        .splash-screen.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            animation: pulse 2s infinite;
+        }
+
+        .splash-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+            animation: slideInUp 1s ease-out;
+        }
+
+        .splash-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            opacity: 0.9;
+            animation: slideInUp 1s ease-out 0.3s both;
+        }
+
+        .splash-loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .splash-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: white;
+            margin: 0 6px;
+            animation: splash-bounce 1.4s infinite ease-in-out both;
+        }
+
+        .splash-dot:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .splash-dot:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        .splash-dot:nth-child(3) {
+            animation-delay: 0s;
+        }
+
+        .splash-status {
+            font-size: 1rem;
+            opacity: 0.8;
+            animation: fadeIn 1s ease-out 1s both;
+        }
+
+        .splash-student-info {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.9;
+            animation: fadeIn 1s ease-out 1.5s both;
+        }
+
+        .splash-student-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .splash-student-id {
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .splash-supervisor {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+            padding-top: 8px;
+            margin-top: 8px;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes splash-bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0);
+            }
+
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Hide main content initially */
+        .main-content {
+            opacity: 0;
+            transition: opacity 1s ease-in;
+        }
+
+        .main-content.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="splash-screen">
+        <div class="splash-logo">
+            <i class="fas fa-shield-alt"></i>
+        </div>
+        <h1 class="splash-title">Spam Email Classifier</h1>
+        <p class="splash-subtitle">Advanced AI-Powered Email Protection</p>
+
+        <div class="splash-loader">
+            <div class="splash-dot"></div>
+            <div class="splash-dot"></div>
+            <div class="splash-dot"></div>
+        </div>
+
+        <div id="splashStatus" class="splash-status">Initializing AI Models...</div>
+
+        <!-- Student Information -->
+        <div class="splash-student-info">
+            <div class="splash-student-name">SHITTU AJIDE YUSUF</div>
+            <div class="splash-student-id">HND/23/COM/FT/0526</div>
+            <div class="splash-supervisor">SUPERVISED BY: MR. OLAJIDE A. T.</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="main-content">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h1 class="display-4 fw-bold mb-3">
+                            <i class="fas fa-shield-alt me-3"></i>
+                            Spam Email Classifier
+                        </h1>
+                        <p class="lead mb-4">
+                            Advanced spam detection using machine learning and deep learning models.
+                            Protect your inbox with state-of-the-art AI technology.
+                        </p>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="text-center">
+                            <i class="fas fa-envelope-open-text fa-5x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container mt-5">
+            <!-- Input Section -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title mb-0">
+                                <i class="fas fa-edit me-2"></i>
+                                Email Text Classifier
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="classificationForm">
+                                <div class="mb-3">
+                                    <label for="emailText" class="form-label fw-bold">
+                                        Enter email text to classify:
+                                    </label>
+                                    <textarea class="form-control" id="emailText" rows="6"
+                                        placeholder="Paste your email content here..." required></textarea>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        The classifier will analyze the text and determine if it's spam or legitimate
+                                        (ham).
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="button" class="btn btn-outline-secondary me-md-2"
+                                        onclick="loadSample()">
+                                        <i class="fas fa-file-alt me-1"></i>
+                                        Load Sample
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search me-1"></i>
+                                        Classify Email
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Loading Spinner -->
+                            <div class="text-center mt-3 loading-spinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Analyzing...</span>
+                                </div>
+                                <p class="mt-2">Analyzing email content...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="row justify-content-center mt-5" style="display: none;">
+                <div class="col-lg-8">
+                    <!-- Main Prediction Result -->
+                    <div id="mainResult" class="prediction-card card mb-4">
+                        <!-- Content will be populated by JavaScript -->
+                    </div>
+
+                    <!-- Individual Model Results -->
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-cogs me-2"></i>
+                                Individual Model Predictions
+                            </h5>
+                        </div>
+                        <div id="individualResults" class="card-body">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="row mt-5 mb-5">
+                <div class="col-12">
+                    <h2 class="text-center mb-5">
+                        <i class="fas fa-star me-2"></i>
+                        Key Features
+                    </h2>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h5>Machine Learning</h5>
+                        <p class="text-muted">
+                            Traditional ML algorithms including Naive Bayes, SVM, and Random Forest
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <h5>Deep Learning</h5>
+                        <p class="text-muted">
+                            Pre-trained transformer models like BERT and DistilBERT for advanced understanding
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h5>Ensemble Prediction</h5>
+                        <p class="text-muted">
+                            Combines multiple models for more accurate and robust spam detection
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div> <!-- End of main-content -->
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-0">
+                <i class="fas fa-code me-2"></i>
+                Spam Email Classifier - Powered by AI & Machine Learning
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Splash Screen Control
+        document.addEventListener('DOMContentLoaded', function () {
+            const splashScreen = document.getElementById('splashScreen');
+            const mainContent = document.getElementById('mainContent');
+            const splashStatus = document.getElementById('splashStatus');
+
+            // Status messages to cycle through
+            const statusMessages = [
+                'Initializing AI Models...',
+                'Loading Machine Learning Algorithms...',
+                'Preparing Deep Learning Models...',
+                'System Ready!'
+            ];
+
+            let currentStatusIndex = 0;
+
+            // Update status message every 800ms
+            const statusInterval = setInterval(() => {
+                if (currentStatusIndex < statusMessages.length - 1) {
+                    currentStatusIndex++;
+                    splashStatus.textContent = statusMessages[currentStatusIndex];
+                }
+            }, 800);
+
+            // Hide splash screen after 3.5 seconds
+            setTimeout(() => {
+                clearInterval(statusInterval);
+
+                // Fade out splash screen
+                splashScreen.classList.add('fade-out');
+
+                // Show main content after splash screen starts fading
+                setTimeout(() => {
+                    mainContent.classList.add('show');
+                    // Remove splash screen from DOM after animation completes
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                    }, 1000);
+                }, 500);
+            }, 3500);
+        });
+
+        // Rest of the JavaScript code
+        const form = document.getElementById('classificationForm');
+        const resultsSection = document.getElementById('resultsSection');
+        const mainResult = document.getElementById('mainResult');
+        const individualResults = document.getElementById('individualResults');
+        const loadingSpinner = document.querySelector('.loading-spinner');
+
+        // Sample texts for demonstration
+        const sampleTexts = [
+            "Congratulations! You've won $1000! Click here to claim your prize NOW! Limited time offer!",
+            "Hey John, thanks for your help with the project yesterday. The presentation went really well!",
+            "URGENT! Your account will be suspended unless you verify your information immediately. Click here now!",
+            "Don't forget about the team meeting tomorrow at 2 PM in the conference room.",
+            "FREE MONEY! No strings attached! Make $500/day working from home! Call now!!!"
+        ];
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const emailText = document.getElementById('emailText').value.trim();
+            if (!emailText) {
+                alert('Please enter some email text to classify.');
+                return;
+            }
+
+            showLoading(true);
+            hideResults();
+
+            try {
+                // Get ensemble prediction
+                const ensembleResponse = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: emailText })
+                });
+
+                // Get individual predictions
+                const individualResponse = await fetch('/predict_individual', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text: emailText })
+                });
+
+                if (ensembleResponse.ok) {
+                    const ensembleData = await ensembleResponse.json();
+                    displayMainResult(ensembleData);
+                }
+
+                if (individualResponse.ok) {
+                    const individualData = await individualResponse.json();
+                    displayIndividualResults(individualData);
+                }
+
+                showResults();
+
+            } catch (error) {
+                console.error('Error:', error);
+
+                // Provide more specific error messages
+                let errorMessage = 'An error occurred while classifying the email.';
+
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    errorMessage = 'Cannot connect to the server. Please make sure the Flask app is running:\n\n' +
+                        '1. Open terminal\n' +
+                        '2. Navigate to the project directory\n' +
+                        '3. Run: python3 app.py\n' +
+                        '4. Wait for "Running on http://localhost:5000"\n' +
+                        '5. Refresh this page';
+                } else if (error.message.includes('CORS')) {
+                    errorMessage = 'CORS error. Please make sure you\'re accessing the page through the Flask server at http://localhost:5000';
+                } else if (error.message.includes('JSON')) {
+                    errorMessage = 'Invalid response from server. Please check the server logs.';
+                }
+
+                alert(errorMessage);
+
+                // Show a user-friendly error in the results section
+                displayErrorResult(errorMessage);
+                showResults();
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        function displayMainResult(data) {
+            const isSpam = data.prediction === 'spam';
+            const confidence = (data.confidence * 100).toFixed(1);
+            const spamProb = (data.spam_probability * 100).toFixed(1);
+
+            mainResult.className = `prediction-card card ${isSpam ? 'spam-result' : 'ham-result'}`;
+            mainResult.innerHTML = `
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas ${isSpam ? 'fa-exclamation-triangle' : 'fa-check-circle'} fa-3x"></i>
+                    </div>
+                    <h3 class="mb-3">${isSpam ? 'SPAM' : 'LEGITIMATE (HAM)'}</h3>
+                    <p class="mb-3">Confidence: ${confidence}%</p>
+                    <div class="progress mb-3" style="height: 25px;">
+                        <div class="progress-bar ${isSpam ? 'bg-warning' : 'bg-success'}" 
+                             style="width: ${confidence}%">
+                            ${confidence}%
+                        </div>
+                    </div>
+                    <small>Spam Probability: ${spamProb}%</small>
+                </div>
+            `;
+        }
+
+        function displayIndividualResults(data) {
+            let html = '';
+
+            // Traditional ML Models
+            if (data.traditional_ml) {
+                html += '<h6 class="mb-3"><i class="fas fa-brain me-2"></i>Traditional Machine Learning</h6>';
+                for (const [model, result] of Object.entries(data.traditional_ml)) {
+                    const confidence = (result.confidence * 100).toFixed(1);
+                    const spamProb = (result.spam_probability * 100).toFixed(1);
+
+                    html += `
+                        <div class="model-result p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${model.replace('_', ' ').toUpperCase()}</strong>
+                                    <span class="badge ${result.prediction === 'spam' ? 'bg-danger' : 'bg-success'} ms-2">
+                                        ${result.prediction.toUpperCase()}
+                                    </span>
+                                </div>
+                                <small class="text-muted">Confidence: ${confidence}%</small>
+                            </div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: ${spamProb}%"></div>
+                            </div>
+                            <small class="text-muted">Spam Probability: ${spamProb}%</small>
+                        </div>
+                    `;
+                }
+            }
+
+            // Deep Learning Models
+            if (data.deep_learning) {
+                html += '<h6 class="mb-3 mt-4"><i class="fas fa-network-wired me-2"></i>Deep Learning</h6>';
+                for (const [model, result] of Object.entries(data.deep_learning)) {
+                    const confidence = (result.confidence * 100).toFixed(1);
+                    const spamProb = (result.spam_probability * 100).toFixed(1);
+
+                    html += `
+                        <div class="model-result p-3 mb-3 rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${model.replace('-', ' ').toUpperCase()}</strong>
+                                    <span class="badge ${result.prediction === 'spam' ? 'bg-danger' : 'bg-success'} ms-2">
+                                        ${result.prediction.toUpperCase()}
+                                    </span>
+                                </div>
+                                <small class="text-muted">Confidence: ${confidence}%</small>
+                            </div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-info" style="width: ${spamProb}%"></div>
+                            </div>
+                            <small class="text-muted">Spam Probability: ${spamProb}%</small>
+                        </div>
+                    `;
+                }
+            }
+
+            if (!html) {
+                html = '<p class="text-muted">No individual model results available.</p>';
+            }
+
+            individualResults.innerHTML = html;
+        }
+
+        function displayErrorResult(errorMessage) {
+            mainResult.className = 'prediction-card card';
+            mainResult.style.backgroundColor = '#fff3e0';
+            mainResult.style.border = '2px solid #ff9800';
+            mainResult.innerHTML = `
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-exclamation-circle fa-3x" style="color: #ff9800;"></i>
+                    </div>
+                    <h3 class="mb-3" style="color: #f57c00;">Connection Error</h3>
+                    <p class="mb-3">${errorMessage.replace(/\n/g, '<br>')}</p>
+                    <div class="alert alert-info">
+                        <strong>To start the server:</strong><br>
+                        <code>cd /Users/factorial/Programming/spam-classifier</code><br>
+                        <code>python3 app.py</code>
+                    </div>
+                </div>
+            `;
+
+            individualResults.innerHTML = `
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-info-circle me-2"></i>Server Status</h6>
+                    <p>The Flask server needs to be running for the web interface to work properly.</p>
+                    <p>Once the server is running, you'll see "Running on http://localhost:5000" in the terminal.</p>
+                </div>
+            `;
+        }
+
+        function loadSample() {
+            const randomSample = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+            document.getElementById('emailText').value = randomSample;
+        }
+
+        function showLoading(show) {
+            loadingSpinner.style.display = show ? 'block' : 'none';
+        }
+
+        function showResults() {
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideResults() {
+            resultsSection.style.display = 'none';
+        }
+
+        // Load models info on page load
+        window.addEventListener('load', async function () {
+            try {
+                const response = await fetch('/models_info');
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Models loaded:', data);
+                }
+            } catch (error) {
+                console.error('Error loading models info:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>

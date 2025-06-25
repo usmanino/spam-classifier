@@ -1,0 +1,8 @@
+[
+  {
+    "type": "False Positive",
+    "actual": "ham",
+    "predicted": "spam",
+    "text": "Looking forward to seeing you at the conference next month."
+  }
+]

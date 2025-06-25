@@ -1,0 +1,50 @@
+{
+  "evaluation_timestamp": "2025-06-21T08:44:27.147389",
+  "total_models_evaluated": 4,
+  "total_test_samples": 11,
+  "best_model": {
+    "name": "Random Forest",
+    "type": "Traditional ML",
+    "f1_score": 0.7499999999999999,
+    "accuracy": 0.6363636363636364,
+    "auc": 0.8666666666666667
+  },
+  "model_performance": {
+    "random_forest": {
+      "accuracy": 0.6363636363636364,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1_score": 0.7499999999999999,
+      "auc_score": 0.8666666666666667
+    },
+    "naive_bayes": {
+      "accuracy": 0.9090909090909091,
+      "precision": 0.8571428571428571,
+      "recall": 1.0,
+      "f1_score": 0.923076923076923,
+      "auc_score": 1.0
+    },
+    "svm": {
+      "accuracy": 0.6363636363636364,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1_score": 0.7499999999999999,
+      "auc_score": 0.0
+    },
+    "logistic_regression": {
+      "accuracy": 0.6363636363636364,
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1_score": 0.7499999999999999,
+      "auc_score": 1.0
+    }
+  },
+  "summary_statistics": {
+    "mean_accuracy": 0.7045454545454545,
+    "std_accuracy": 0.13636363636363635,
+    "mean_f1": 0.7932692307692307,
+    "std_f1": 0.08653846153846158,
+    "best_accuracy": 0.9090909090909091,
+    "best_f1": 0.923076923076923
+  }
+}
